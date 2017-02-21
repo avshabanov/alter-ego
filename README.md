@@ -37,3 +37,7 @@ make play
 
 Installation and compilation is identical to Mac OS X instructions above. Replace brew with packet manager that your OS supports and voila!
 
+# Links
+
+* [Programming NES games in C](http://shiru.untergrund.net/articles/programming_nes_games_in_c.htm)
+
