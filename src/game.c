@@ -2,6 +2,7 @@
 
 #include "credits.h"
 #include "title.h"
+#include "map0.h"
 #include "map1.h"
 #include "map2.h"
 #include "map3.h"
@@ -117,7 +118,7 @@
 #define MUS_WELLDONE		7
 #define MUS_ALL				8
 
-const char versionStr[]="Alter Ego v1.022 16.12.11";
+const char versionStr[]="Alter Ego v1.023a 21.02.17";
 
 //music pointers list
 
@@ -165,7 +166,8 @@ TILE_WALL  ,TILE_WALL  ,TILE_WALL ,TILE_WALL,
 TILE_LADDER,TILE_WALL  ,TILE_WALL ,TILE_WALL
 };
 
-const unsigned char* level_ptrs[25*2]={
+const unsigned char* level_ptrs[26*2]={
+map0,palGameBG1,
 map1,palGameBG1,
 map2,palGameBG1,
 map3,palGameBG1,
@@ -195,7 +197,8 @@ map25,palGameBG5
 
 //restarts, sync type
 
-const unsigned char level_params[25*2]={
+const unsigned char level_params[26*2]={
+2,0,//0
 2,0,//1
 2,0,//2
 0,0,//3
@@ -363,6 +366,7 @@ unsigned char pal_cnt;
 
 unsigned char frame_cnt;
 unsigned char items_cnt;
+unsigned char first_level;
 unsigned char level;
 unsigned char level_done;
 unsigned char start_delay;
@@ -568,11 +572,17 @@ void title_screen(void)
 			{
 				i=pad_poll();
 				if((i&PAD_A)&&(i&PAD_B)) py=1;
+        if(i&PAD_SELECT) first_level=0;/* cow level! */
 				frame_cnt=4;
 				j=50;
 				atr=4;
 				music_stop();
-				sfx_play(SFX_START,0);
+        if (first_level==1)
+        {
+				  sfx_play(SFX_START,0);
+        } else {
+          sfx_play(SFX_EXCHANGE, 0);
+        }
 			}
 		}
 		else
@@ -793,7 +803,7 @@ void game_add_background(void)
 
 void game_set_palettes(void)
 {
-	memcpy(palette,level_ptrs[(level<<1)+1],16);
+  memcpy(palette,level_ptrs[(level<<1)+1],16);
 	memcpy(palette+16,palSprites,12);
 	memcpy(palette+28,palette+12,4);
 }
@@ -813,7 +823,7 @@ void game_loop(void)
 	game_add_background();
 	ppu_on_all();
 
-	i=MUS_GAME1+level/5;
+	i=MUS_GAME1+(level == 0 ? 0 : ((level - 1)/5));
 
 	if(music_prev!=i)
 	{
@@ -1522,7 +1532,7 @@ void game_loop(void)
 			if((i&15)==1) memcpy(update_list,levelClear,sizeof(levelClear));
 		}
 
-		if(level==4||level==9||level==14||level==19||level==24) i=1; else i=0;
+		if(level==5||level==10||level==15||level==20||level==25) i=1; else i=0;
 	}
 
 	if(level_done==DONE_NOLUCK)
@@ -1552,6 +1562,7 @@ void game_loop(void)
 void main(void)
 {
 	level_skip=0;
+  first_level = 1;
 
 	credits_screen();
 
@@ -1559,7 +1570,7 @@ void main(void)
 	{
 		title_screen();
 
-		level=0;
+		level=first_level;
 		restart=5;
 		music_prev=255;
 
@@ -1577,7 +1588,7 @@ void main(void)
 					if(restart<9) restart++;
 				}
 
-				if(level==25)
+				if(level==26)
 				{
 					restart=255;
 					well_done_screen();//game clear
